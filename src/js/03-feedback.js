@@ -1,9 +1,8 @@
 import throttle from 'lodash.throttle';
+import storage from './localstorage.js';
 
 // локальне сховище
 const STORAGE_KEY = 'feedback-form-state';
-// створюємо новий об'єкт для збереження усіх даних з форми
-const formData = { email: '', message: '' };
 
 // об'єкт форми
 const refs = {
@@ -12,81 +11,43 @@ const refs = {
   message: document.querySelector('textarea'),
 };
 
-console.log(refs);
-
 // ставимо слухачі
 refs.form.addEventListener('submit', onFormSubmit);
-refs.eMail.addEventListener('input', throttle(onInput, 500));
-refs.message.addEventListener('input', throttle(onInput, 500));
-refs.form.addEventListener('input', onInput);
+refs.form.addEventListener('input', throttle(onInput, 500));
 
 // очищаємо форму при передачі данних
 function onFormSubmit(event) {
   event.preventDefault();
+
+  const elements = event.target.elements;
+  const email = elements.email.value;
+  const message = elements.message.value;
+
+  if (email === '' || message === '') {
+    return alert('Please, fill in all the fields');
+  }
+
+  console.log({ email, message });
 
   event.currentTarget.reset();
   localStorage.removeItem(STORAGE_KEY);
 }
 
 function onInput(event) {
-  const fieldName = event.target.name;
-  const fieldValue = event.target.value;
-  formData[fieldName] = fieldValue;
-  saveFormDataToLocalStorage();
-}
-
-function saveFormDataToLocalStorage() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  const { name, value } = event.target;
+  const savedFormData = storage.load(STORAGE_KEY) || {};
+  savedFormData[name] = value;
+  storage.save(STORAGE_KEY, savedFormData);
 }
 
 // дістає незбережені дані
 function output() {
-  const savedFormData = localStorage.getItem(STORAGE_KEY);
+  const savedFormData = storage.load(STORAGE_KEY);
 
   if (savedFormData) {
-    const parsedFormData = JSON.parse(savedFormData);
-    refs.eMail.value = parsedFormData.email;
-    refs.message.value = parsedFormData.message;
+    refs.eMail.value = savedFormData.email || '';
+    refs.message.value = savedFormData.message || '';
   }
 }
 
 output();
-
-// зупиннямо поведінку за замовчуванням
-// забираємо повідомлення зі сховища
-// очищуємо форму
-
-// function onFormSubmit(event) {
-//   event.preventDefault();
-//   // Додати код для відправки даних
-//   JSON.stringify(formData);
-
-//   event.currentTarget.reset();
-//   localStorage.removeItem(STORAGE_KEY);
-// }
-// // отримуємо значення в полі, зберігаємо в сховищі
-// function onEMailInput(event) {
-//   const eMail = event.target.value;
-//   localStorage.setItem(STORAGE_KEY, eMail);
-// }
-
-// function onMessageInput(event) {
-//   const text = event.target.value;
-
-//   localStorage.setItem(STORAGE_KEY, text);
-// }
-
-// // отримуемо значення зі сховища
-// // якщо щось було, обновляємо DOM
-// function outPut() {
-//   const savedEMail = localStorage.getItem(STORAGE_KEY);
-//   const savedMessage = localStorage.getItem(STORAGE_KEY);
-
-//   if (savedEMail) {
-//     refs.eMail.value = savedEMail;
-//   }
-
-//   if (savedMessage) {
-//     refs.message.value = savedMessage;
-//   }
-// }
