@@ -14,12 +14,13 @@ const refs = {
 
 console.log(refs);
 
+// ставимо слухачі
 refs.form.addEventListener('submit', onFormSubmit);
 refs.eMail.addEventListener('input', throttle(onInput, 500));
 refs.message.addEventListener('input', throttle(onInput, 500));
-
 refs.form.addEventListener('input', onInput);
 
+// очищаємо форму при передачі данних
 function onFormSubmit(event) {
   event.preventDefault();
 
@@ -37,6 +38,8 @@ function onInput(event) {
 function saveFormDataToLocalStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 }
+
+// дістає незбережені дані
 function output() {
   const savedFormData = localStorage.getItem(STORAGE_KEY);
 
@@ -48,6 +51,7 @@ function output() {
 }
 
 output();
+
 // зупиннямо поведінку за замовчуванням
 // забираємо повідомлення зі сховища
 // очищуємо форму
